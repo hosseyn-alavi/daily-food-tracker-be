@@ -6,7 +6,7 @@ import fs from "fs";
 import path from "path";
 import * as dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 interface User {
     username: string;
@@ -25,14 +25,20 @@ interface Food {
 }
 
 const app = express();
-const port = 3010;
-const secretKey = process.env.SECRET_KEY ||"";
+const port = process.env.PORT || 3010;
+const secretKey = process.env.SECRET_KEY || "";
 
 app.use(bodyParser.json());
 
+app.use(express.static(path.join(__dirname, "fe-build")));
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "fe-build", "index.html"));
+});
+
 // Login endpoint
 app.post(
-    "/login",
+    "/api/login",
     (req: Request<undefined, undefined, User>, res: Response) => {
         const filePath = path.join(__dirname, "data", `users.json`);
 
@@ -82,7 +88,7 @@ function authenticateToken(req: Request, res: Response, next: () => void) {
 }
 
 // Get daily record with date and food name (id) and amount
-app.get("/records/:date", authenticateToken, (req, res) => {
+app.get("/api/records/:date", authenticateToken, (req, res) => {
     const {date} = req.params;
     const filePath = path.join(__dirname, "data", "records", `${date}.json`);
 
@@ -97,7 +103,7 @@ app.get("/records/:date", authenticateToken, (req, res) => {
 });
 
 // Get food name and calorie per 100gr
-app.get("/foods/:id", authenticateToken, (req, res) => {
+app.get("/api/foods/:id", authenticateToken, (req, res) => {
     const {id} = req.params;
     const filePath = path.join(__dirname, "data", "foods.json");
 
@@ -118,7 +124,7 @@ app.get("/foods/:id", authenticateToken, (req, res) => {
 });
 
 // Get food name and calorie per 100gr
-app.get("/foods", authenticateToken, (req, res) => {
+app.get("/api/foods", authenticateToken, (req, res) => {
     const {id} = req.params;
     console.log("file: index.ts:91 ~ id:", id);
     const filePath = path.join(__dirname, "data", "foods.json");
@@ -140,7 +146,7 @@ app.get("/foods", authenticateToken, (req, res) => {
 });
 
 // Get the list of daily records populated with foods JSON file
-app.get("/records", authenticateToken, (req, res) => {
+app.get("/api/records", authenticateToken, (req, res) => {
     const recordsDir = path.join(__dirname, "data", "records");
     const foodsFilePath = path.join(__dirname, "data", "foods.json");
 
@@ -175,7 +181,7 @@ app.get("/records", authenticateToken, (req, res) => {
 });
 
 // Add a new record
-app.post("/records/:date", authenticateToken, (req, res) => {
+app.post("/api/records/:date", authenticateToken, (req, res) => {
     const {date} = req.params;
     const filePath = path.join(__dirname, "data", "records", `${date}.json`);
 
@@ -198,7 +204,7 @@ app.post("/records/:date", authenticateToken, (req, res) => {
 });
 
 // Add a new food
-app.post("/foods", authenticateToken, (req, res) => {
+app.post("/api/foods", authenticateToken, (req, res) => {
     const {id, name, caloriesPer100g} = req.body;
     const filePath = path.join(__dirname, "data", "foods.json");
 
