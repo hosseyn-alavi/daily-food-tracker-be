@@ -1,0 +1,226 @@
+import express, {Request, Response} from "express";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import bodyParser from "body-parser";
+import fs from "fs";
+import path from "path";
+
+require('dotenv').config()
+
+interface User {
+    username: string;
+    password: string;
+}
+
+interface Record {
+    foodId: number;
+    amount: number;
+}
+
+interface Food {
+    id: number;
+    name: string;
+    caloriesPer100g: number;
+}
+
+const app = express();
+const port = 3010;
+const secretKey = process.env.SECRET_KEY ||"";
+
+app.use(bodyParser.json());
+
+// Login endpoint
+app.post(
+    "/login",
+    (req: Request<undefined, undefined, User>, res: Response) => {
+        const filePath = path.join(__dirname, "data", `users.json`);
+
+        fs.readFile(filePath, "utf8", (err, data) => {
+            const users: User[] = JSON.parse(data);
+
+            const user = users.find(
+                (u) =>
+                    u.username === req.body.username &&
+                    u.password === req.body.password
+            );
+            if (user) {
+                // Generate JWT token
+                const token = jwt.sign(
+                    {username: req.body.username},
+                    secretKey,
+                    {
+                        expiresIn: "1h",
+                    }
+                );
+
+                res.json({token});
+            } else {
+                res.status(401).json({error: "Invalid credentials"});
+            }
+        });
+    }
+);
+
+// Middleware to authenticate JWT token
+function authenticateToken(req: Request, res: Response, next: () => void) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (token == null) {
+        return res.sendStatus(401);
+    }
+
+    jwt.verify(token, secretKey, (err: any, user: any) => {
+        if (err) {
+            return res.sendStatus(403);
+        }
+
+        // req.user = user;
+        next();
+    });
+}
+
+// Get daily record with date and food name (id) and amount
+app.get("/records/:date", authenticateToken, (req, res) => {
+    const {date} = req.params;
+    const filePath = path.join(__dirname, "data", "records", `${date}.json`);
+
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            return res.status(404).json({error: "Record not found"});
+        }
+
+        const record = JSON.parse(data);
+        res.json(record);
+    });
+});
+
+// Get food name and calorie per 100gr
+app.get("/foods/:id", authenticateToken, (req, res) => {
+    const {id} = req.params;
+    const filePath = path.join(__dirname, "data", "foods.json");
+
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            return res.status(500).json({error: "Internal server error"});
+        }
+
+        const foods = JSON.parse(data);
+        const food = foods.find((f: Food) => f.id === Number(id));
+
+        if (food) {
+            res.json(food);
+        } else {
+            res.status(404).json({error: "Food not found"});
+        }
+    });
+});
+
+// Get food name and calorie per 100gr
+app.get("/foods", authenticateToken, (req, res) => {
+    const {id} = req.params;
+    console.log("file: index.ts:91 ~ id:", id);
+    const filePath = path.join(__dirname, "data", "foods.json");
+
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            return res.status(500).json({error: "Internal server error"});
+        }
+
+        const foods = JSON.parse(data);
+        //  const food = foods.find((f) => f.id === id);
+
+        if (foods) {
+            res.json(foods);
+        } else {
+            res.status(404).json({error: "Food not found"});
+        }
+    });
+});
+
+// Get the list of daily records populated with foods JSON file
+app.get("/records", authenticateToken, (req, res) => {
+    const recordsDir = path.join(__dirname, "data", "records");
+    const foodsFilePath = path.join(__dirname, "data", "foods.json");
+
+    fs.readdir(recordsDir, (err, files) => {
+        if (err) {
+            return res.status(500).json({error: "Internal server error"});
+        }
+
+        const records: {}[] = [];
+
+        files.forEach((file) => {
+            const filePath = path.join(recordsDir, file);
+            const recordData = fs.readFileSync(filePath, "utf8");
+            const record = JSON.parse(recordData);
+
+            const foodsData = fs.readFileSync(foodsFilePath, "utf8");
+            const foods = JSON.parse(foodsData);
+
+            const populatedRecord = {
+                date: record.date,
+                items: record.items.map((item: Record) => {
+                    const food = foods.find((f: Food) => f.id === item.foodId);
+                    return {...item, name: food ? food.name : ""};
+                }),
+            };
+
+            records.push(populatedRecord);
+        });
+
+        res.json(records);
+    });
+});
+
+// Add a new record
+app.post("/records/:date", authenticateToken, (req, res) => {
+    const {date} = req.params;
+    const filePath = path.join(__dirname, "data", "records", `${date}.json`);
+
+    fs.readFile(filePath, "utf8", (err, data) => {
+        const records: any[] = [];
+        if (data) {
+            console.log("file: index.ts:170 ~ data:", ...JSON.parse(data));
+            records.push(...JSON.parse(data));
+        }
+        const newRecord = {...req.body};
+        records.push(newRecord);
+        fs.writeFile(filePath, JSON.stringify(records), "utf8", (err) => {
+            if (err) {
+                return res.status(500).json({error: "Failed to add record"});
+            }
+
+            res.json({message: "Record added successfully"});
+        });
+    });
+});
+
+// Add a new food
+app.post("/foods", authenticateToken, (req, res) => {
+    const {id, name, caloriesPer100g} = req.body;
+    const filePath = path.join(__dirname, "data", "foods.json");
+
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            return res.status(500).json({error: "Internal server error"});
+        }
+
+        const foods = JSON.parse(data);
+        const newFood = {id, name, caloriesPer100g};
+        foods.push(newFood);
+
+        fs.writeFile(filePath, JSON.stringify(foods), "utf8", (err) => {
+            if (err) {
+                return res.status(500).json({error: "Failed to add food"});
+            }
+
+            res.json({message: "Food added successfully"});
+        });
+    });
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+});
