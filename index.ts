@@ -4,8 +4,9 @@ import bcrypt from "bcrypt";
 import bodyParser from "body-parser";
 import fs from "fs";
 import path from "path";
+import * as dotenv from "dotenv";
 
-require('dotenv').config()
+dotenv.config()
 
 interface User {
     username: string;
