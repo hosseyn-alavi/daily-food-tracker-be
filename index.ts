@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import fs from "fs";
 import path from "path";
 import * as dotenv from "dotenv";
+import cors from "cors"
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ const port = process.env.PORT || 3010;
 const secretKey = process.env.SECRET_KEY || "";
 
 app.use(bodyParser.json());
+app.use(cors());
 
 app.use(express.static(path.join(__dirname, "fe-build")));
 

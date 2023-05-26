@@ -52,11 +52,13 @@ var body_parser_1 = __importDefault(require("body-parser"));
 var fs_1 = __importDefault(require("fs"));
 var path_1 = __importDefault(require("path"));
 var dotenv = __importStar(require("dotenv"));
+var cors_1 = __importDefault(require("cors"));
 dotenv.config();
 var app = (0, express_1.default)();
 var port = process.env.PORT || 3010;
 var secretKey = process.env.SECRET_KEY || "";
 app.use(body_parser_1.default.json());
+app.use((0, cors_1.default)());
 app.use(express_1.default.static(path_1.default.join(__dirname, "fe-build")));
 app.get("*", function (req, res) {
     res.sendFile(path_1.default.join(__dirname, "fe-build", "index.html"));
