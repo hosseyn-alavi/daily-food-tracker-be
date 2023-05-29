@@ -5,11 +5,12 @@ import bodyParser from "body-parser";
 import fs from "fs";
 import path from "path";
 import * as dotenv from "dotenv";
-import cors from "cors"
+import cors from "cors";
 
 dotenv.config();
 
 interface User {
+    id: number;
     username: string;
     password: string;
 }
@@ -34,10 +35,6 @@ app.use(cors());
 
 app.use(express.static(path.join(__dirname, "fe-build")));
 
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "fe-build", "index.html"));
-});
-
 // Login endpoint
 app.post(
     "/api/login",
@@ -55,7 +52,7 @@ app.post(
             if (user) {
                 // Generate JWT token
                 const token = jwt.sign(
-                    {username: req.body.username},
+                    {username: req.body.username, userId: user.id},
                     secretKey,
                     {
                         expiresIn: "1h",
@@ -71,7 +68,11 @@ app.post(
 );
 
 // Middleware to authenticate JWT token
-function authenticateToken(req: Request, res: Response, next: () => void) {
+function authenticateToken(
+    req: Request & {user},
+    res: Response,
+    next: () => void
+) {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
 
@@ -84,7 +85,7 @@ function authenticateToken(req: Request, res: Response, next: () => void) {
             return res.sendStatus(403);
         }
 
-        // req.user = user;
+        req.user = user;
         next();
     });
 }
@@ -128,7 +129,6 @@ app.get("/api/foods/:id", authenticateToken, (req, res) => {
 // Get food name and calorie per 100gr
 app.get("/api/foods", authenticateToken, (req, res) => {
     const {id} = req.params;
-    console.log("file: index.ts:91 ~ id:", id);
     const filePath = path.join(__dirname, "data", "foods.json");
 
     fs.readFile(filePath, "utf8", (err, data) => {
@@ -183,27 +183,38 @@ app.get("/api/records", authenticateToken, (req, res) => {
 });
 
 // Add a new record
-app.post("/api/records/:date", authenticateToken, (req, res) => {
-    const {date} = req.params;
-    const filePath = path.join(__dirname, "data", "records", `${date}.json`);
+app.post(
+    "/api/records/:date",
+    authenticateToken,
+    (req: Request & {user: {userId: number}}, res) => {
+        const {date} = req.params;
+        const filePath = path.join(
+            __dirname,
+            "data",
+            "records",
+            "0",
+            `${date}.json`
+        );
 
-    fs.readFile(filePath, "utf8", (err, data) => {
-        const records: any[] = [];
-        if (data) {
-            console.log("file: index.ts:170 ~ data:", ...JSON.parse(data));
-            records.push(...JSON.parse(data));
-        }
-        const newRecord = {...req.body};
-        records.push(newRecord);
-        fs.writeFile(filePath, JSON.stringify(records), "utf8", (err) => {
-            if (err) {
-                return res.status(500).json({error: "Failed to add record"});
+        fs.readFile(filePath, "utf8", (err, data) => {
+            const records: any[] = [];
+            if (data) {
+                records.push(...JSON.parse(data));
             }
+            const newRecord = {...req.body};
+            records.push(newRecord);
+            fs.writeFile(filePath, JSON.stringify(records), "utf8", (err) => {
+                if (err) {
+                    return res
+                        .status(500)
+                        .json({error: "Failed to add record"});
+                }
 
-            res.json({message: "Record added successfully"});
+                res.json({message: "Record added successfully"});
+            });
         });
-    });
-});
+    }
+);
 
 // Add a new food
 app.post("/api/foods", authenticateToken, (req, res) => {
@@ -229,6 +240,9 @@ app.post("/api/foods", authenticateToken, (req, res) => {
     });
 });
 
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "fe-build", "index.html"));
+});
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
