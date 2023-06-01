@@ -91,9 +91,9 @@ function authenticateToken(
 }
 
 // Get daily record with date and food name (id) and amount
-app.get("/api/records/:date", authenticateToken, (req, res) => {
+app.get("/api/records/:date", authenticateToken, (req:Request & {user: {userId: number}}, res) => {
     const {date} = req.params;
-    const filePath = path.join(__dirname, "data", "records", `${date}.json`);
+    const filePath = path.join(__dirname, "data", "records", `${req.user.userId}`, `${date}.json`);
 
     fs.readFile(filePath, "utf8", (err, data) => {
         if (err) {
@@ -192,7 +192,7 @@ app.post(
             __dirname,
             "data",
             "records",
-            "0",
+            `${req.user.userId}`,
             `${date}.json`
         );
 
