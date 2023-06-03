@@ -55,7 +55,7 @@ app.post(
                     {username: req.body.username, userId: user.id},
                     secretKey,
                     {
-                        expiresIn: "1h",
+                        expiresIn: "7d",
                     }
                 );
 
