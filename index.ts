@@ -13,6 +13,7 @@ interface User {
     id: number;
     username: string;
     password: string;
+    dailyGoal?: number
 }
 
 interface Record {
@@ -24,6 +25,14 @@ interface Food {
     id: number;
     name: string;
     caloriesPer100g: number;
+}
+
+interface TokenValues {
+    user:{
+        username: string
+    userId: number
+    dailyGoal?: number
+    }
 }
 
 const app = express();
@@ -52,7 +61,7 @@ app.post(
             if (user) {
                 // Generate JWT token
                 const token = jwt.sign(
-                    {username: req.body.username, userId: user.id},
+                    {username: req.body.username, userId: user.id, dailyGoal: user.dailyGoal ?? 0},
                     secretKey,
                     {
                         expiresIn: "7d",
@@ -91,7 +100,7 @@ function authenticateToken(
 }
 
 // Get daily record with date and food name (id) and amount
-app.get("/api/records/:date", authenticateToken, (req:Request & {user: {userId: number}}, res) => {
+app.get("/api/records/:date", authenticateToken, (req:Request & TokenValues, res) => {
     const {date} = req.params;
     const filePath = path.join(__dirname, "data", "records", `${req.user.userId}`, `${date}.json`);
 
@@ -100,8 +109,8 @@ app.get("/api/records/:date", authenticateToken, (req:Request & {user: {userId: 
             return res.status(404).json({error: "Record not found"});
         }
 
-        const record = JSON.parse(data);
-        res.json(record);
+        const records = JSON.parse(data);
+        res.json({records, dailyGoal:req.user.dailyGoal});
     });
 });
 
@@ -186,7 +195,7 @@ app.get("/api/records", authenticateToken, (req, res) => {
 app.post(
     "/api/records/:date",
     authenticateToken,
-    (req: Request & {user: {userId: number}}, res) => {
+    (req: Request & TokenValues, res) => {
         const {date} = req.params;
         const filePath = path.join(
             __dirname,
