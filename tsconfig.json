@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
       "esModuleInterop": true,
+      "outDir": "out",
       // other compiler options...
     },
     // other configurations...

@@ -42,7 +42,7 @@ const secretKey = process.env.SECRET_KEY || "";
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use(express.static(path.join(__dirname, "fe-build")));
+app.use(express.static(path.join(__dirname, "build")));
 
 // Login endpoint
 app.post(
@@ -250,7 +250,7 @@ app.post("/api/foods", authenticateToken, (req, res) => {
 });
 
 app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "fe-build", "index.html"));
+    res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 // Start the server
 app.listen(port, () => {
