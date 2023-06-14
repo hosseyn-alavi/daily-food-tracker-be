@@ -88,7 +88,7 @@ var app = (0, express_1.default)();
 var port = process.env.PORT || 3010;
 var secretKey = process.env.SECRET_KEY || "";
 database_1.sequelize
-    .sync({ force: true })
+    .sync()
     .then(function () {
     console.log("Database sync successful.");
 })

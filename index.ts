@@ -25,7 +25,7 @@ const port = process.env.PORT || 3010;
 const secretKey = process.env.SECRET_KEY || "";
 
 sequelize
-    .sync({force:true})
+    .sync()
     .then(() => {
         console.log("Database sync successful.");
     })
