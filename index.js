@@ -180,7 +180,7 @@ app.get("/api/records/:date", authenticateToken, function (req, res) { return __
                 _b.label = 1;
             case 1:
                 _b.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, DailyRecord_1.DailyRecord.findAll({ where: { date: date } })];
+                return [4 /*yield*/, DailyRecord_1.DailyRecord.findAll({ where: { date: date, userId: req.user.userId } })];
             case 2:
                 records = _b.sent();
                 if (records) {

@@ -124,7 +124,7 @@ app.get(
     async (req: Request & TokenValues, res) => {
         const {date} = req.params;
         try {
-            const records = await DailyRecord.findAll({where: {date}});
+            const records = await DailyRecord.findAll({where: {date, userId:req.user.userId}});
             if (records) {
                 res.json({records, dailyGoal: req.user.dailyGoal});
             }
