@@ -34,4 +34,20 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 });
 
+router.delete(
+    "/:id",
+    authenticateToken,
+    async (req: Request<{id:string}, undefined, FoodInstance>, res) => {
+        const {id} = req.params
+        try {
+            const food = await Food.destroy({where:{id}});
+            if (food) {
+                res.json({message:"Successfully deleted"});
+            }
+        } catch {
+            res.status(500).json({error: "Internal server error"});
+        }
+    }
+);
+
 export default router;
