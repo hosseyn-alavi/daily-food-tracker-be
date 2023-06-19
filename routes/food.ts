@@ -37,12 +37,15 @@ router.get("/", authenticateToken, async (req, res) => {
 router.delete(
     "/:id",
     authenticateToken,
-    async (req: Request<{id:string}, undefined, FoodInstance>, res) => {
-        const {id} = req.params
+    async (req: Request<{id: string}, undefined, FoodInstance>, res) => {
+        const {id} = req.params;
         try {
-            const food = await Food.destroy({where:{id}});
+            const food = await Food.destroy({where: {id}});
             if (food) {
-                res.json({message:"Successfully deleted"});
+                res.json({message: "Successfully deleted"});
+            }
+            {
+                res.status(401).json({error: "Record not found"});
             }
         } catch {
             res.status(500).json({error: "Internal server error"});

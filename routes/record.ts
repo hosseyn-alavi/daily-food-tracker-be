@@ -47,4 +47,22 @@ router.post(
     }
 );
 
+router.delete(
+    "/:id",
+    authenticateToken,
+    async (req: Request<{id: string}, undefined, DailyRecordInstance>, res) => {
+        const {id} = req.params;
+        try {
+            const record = await DailyRecord.destroy({where: {id}});
+            if (record) {
+                res.json({message: "Successfully deleted"});
+            } else {
+                res.status(401).json({error: "Record not found"});
+            }
+        } catch {
+            res.status(500).json({error: "Internal server error"});
+        }
+    }
+);
+
 export default router;

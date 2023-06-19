@@ -102,4 +102,31 @@ router.post("/:date", utils_1.authenticateToken, function (req, res) { return __
         }
     });
 }); });
+router.delete("/:id", utils_1.authenticateToken, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var id, record, _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                id = req.params.id;
+                _b.label = 1;
+            case 1:
+                _b.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, DailyRecord_1.DailyRecord.destroy({ where: { id: id } })];
+            case 2:
+                record = _b.sent();
+                if (record) {
+                    res.json({ message: "Successfully deleted" });
+                }
+                else {
+                    res.status(401).json({ error: "Record not found" });
+                }
+                return [3 /*break*/, 4];
+            case 3:
+                _a = _b.sent();
+                res.status(500).json({ error: "Internal server error" });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); });
 exports.default = router;

@@ -105,6 +105,9 @@ router.delete("/:id", utils_1.authenticateToken, function (req, res) { return __
                 if (food) {
                     res.json({ message: "Successfully deleted" });
                 }
+                {
+                    res.status(401).json({ error: "Record not found" });
+                }
                 return [3 /*break*/, 4];
             case 3:
                 _a = _b.sent();
