@@ -3,12 +3,12 @@ import bodyParser from "body-parser";
 import path from "path";
 import * as dotenv from "dotenv";
 import cors from "cors";
+dotenv.config();
 import {sequelize} from "./database";
 import usersRouter from "./routes/user"
 import foodsRouter from "./routes/food"
 import recordsRouter from "./routes/record"
 
-dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3010;

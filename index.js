@@ -31,11 +31,11 @@ var body_parser_1 = __importDefault(require("body-parser"));
 var path_1 = __importDefault(require("path"));
 var dotenv = __importStar(require("dotenv"));
 var cors_1 = __importDefault(require("cors"));
+dotenv.config();
 var database_1 = require("./database");
 var user_1 = __importDefault(require("./routes/user"));
 var food_1 = __importDefault(require("./routes/food"));
 var record_1 = __importDefault(require("./routes/record"));
-dotenv.config();
 var app = (0, express_1.default)();
 var port = process.env.PORT || 3010;
 database_1.sequelize
