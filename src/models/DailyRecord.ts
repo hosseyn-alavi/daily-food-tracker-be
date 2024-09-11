@@ -1,4 +1,4 @@
-import {DataTypes, Model, Optional} from "sequelize";
+import {DataTypes, type Model, type Optional} from "sequelize";
 import {sequelize} from "../database";
 import {User} from "./User";
 

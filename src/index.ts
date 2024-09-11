@@ -1,6 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
-import path from "path";
+const path = require("node:path");
 import * as dotenv from "dotenv";
 import cors from "cors";
 dotenv.config();

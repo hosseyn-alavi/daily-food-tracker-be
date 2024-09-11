@@ -1,8 +1,10 @@
 {
     "compilerOptions": {
-      "esModuleInterop": true,
-      // other compiler options...
-    },
+        "esModuleInterop": true,
+        "outDir": "./dist", // Specifies the output directory
+        "rootDir": "./src",
+        "strict": true
+        // other compiler options...
+    }
     // other configurations...
-  }
-  
+}

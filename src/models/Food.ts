@@ -1,11 +1,11 @@
-import {DataTypes, Model, Optional} from "sequelize";
+import {DataTypes, type Model, type Optional} from "sequelize";
 import {sequelize} from "../database";
 
 interface FoodAttributes {
     id: number;
     name: string;
     caloriesPer100g: number;
-    defaultWeight?:number
+    defaultWeight?: number;
 }
 
 interface FoodCreationAttributes extends Optional<FoodAttributes, "id"> {}
