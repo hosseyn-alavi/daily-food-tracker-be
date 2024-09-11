@@ -1,11 +1,8 @@
-import express, {Request, Response} from "express";
+import express, {type Request, type Response} from "express";
 import jwt from "jsonwebtoken";
-import {User, UserInstance} from "../models/User";
+import {User, type UserInstance} from "../models/User";
 
 const router = express.Router();
-// const secretKey = process.env.SECRET_KEY || "";
-// console.log("file: user.ts:7 ~ secretKey:", secretKey)
-
 // Login endpoint
 router.post(
     "/login",
@@ -25,7 +22,7 @@ router.post(
                     userId: user.id,
                     dailyGoal: user.dailyGoal ?? 0,
                 },
-                process.env.SECRET_KEY,
+                process.env.SECRET_KEY ?? "",
                 {
                     expiresIn: "7d",
                 }
@@ -61,4 +58,4 @@ router.post(
         }
     }
 );
- export default router
+export default router;
