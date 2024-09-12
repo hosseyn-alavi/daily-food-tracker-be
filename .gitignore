@@ -4,3 +4,4 @@
 /build
 database.sqlite
 /dist
+/old
