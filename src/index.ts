@@ -24,7 +24,7 @@ sequelize
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use(express.static(path.join(__dirname, "build")));
+app.use(express.static(path.join(__dirname, "../front-end/build")));
 
 app.use("/api", usersRouter);
 app.use("/api/foods", foodsRouter);
